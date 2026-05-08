@@ -43,15 +43,8 @@ ranges = [(i, min(i+chunk, N+1)) for i in range(1, N+1, chunk)]
 with Pool(cpu_count()) as p:
     results = p.map(worker, ranges)
 
-for r in results:
-    for x in r:
-        print(x)
 
-
-# Output:
-# 1
-# 2
-# 3
-# 4
-# 6
-# 14
+with open("../exceptions/prime_square_square.txt", "w") as f:
+        for r in sorted(results):
+            for x in r:
+                f.write(f"{x}\n")
