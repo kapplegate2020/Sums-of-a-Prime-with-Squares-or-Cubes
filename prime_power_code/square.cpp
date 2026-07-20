@@ -35,21 +35,21 @@ bool isPrime(ll n){
 
 
 //binary search for x such that x^power <= n < (x+1)^power
-ll squareRootFloor(ll n, int power) {
+ll cubeRootFloor(ll n) {
     if (n == 0 || n == 1) {
         return n;
     }
 
     ll low = 1;
-    ll high = 1<<(64/power-2);
+    ll high = 1<<30;
     ll ans = 1;
 
     while (low <= high) {
         ll mid = low + (high - low) / 2;
-        if (pow(mid, power) == n) { // Use long long to prevent overflow for mid*mid
+        if (mid*mid == n) { // Use long long to prevent overflow for mid*mid
             return mid;
         }
-        if (pow(mid, power) < n) {
+        if (mid*mid < n) {
             ans = mid;
             low = mid + 1;
         } else {
@@ -69,20 +69,20 @@ void load_primes(const std::string& filename) {
 }
 
 //check for exceptions between in the range [128*k+1, 128*(k+1)]
-vector<ll> checkRange(ll k, int power) {
+vector<ll> checkRange(ll k) {
     ll startEven = 128 * k + 2;
     ll startOdd = 128 * k + 1;
     
     uint64_t evenBitmap = 0ULL;
     uint64_t oddBitmap = 0ULL;
 
-    ll largestRoot = squareRootFloor(128*(k+1), power);
+    ll largestRoot = cubeRootFloor(128*(k+1));
     ll evenRoot = 2*(largestRoot/2);
     ll oddRoot = 2*((largestRoot+1)/2)-1;
 
     //apply the prime bitmap plus nextPower to evenBitmap for all odd nextPowers that are greater than 128*k+1
     //also, cross out nextPower from the oddBitmap
-    ll nextPower = pow(oddRoot, power);
+    ll nextPower = oddRoot*oddRoot;
     while (nextPower >= startOdd && oddRoot > 0){
         int l = (nextPower-startOdd+1)/2;
         oddBitmap |= (1ULL<<((nextPower-startOdd)/2));
@@ -90,12 +90,12 @@ vector<ll> checkRange(ll k, int power) {
             evenBitmap |= (primeBitmaps[0] << l);
         }
         oddRoot -= 2;
-        nextPower = pow(oddRoot, power);
+        nextPower = oddRoot*oddRoot;
     }
     
     //apply the prime bitmap plus nextPower to oddBitmap for all even nextPowers that are greater than 128*k+1
     //also, cross out nextPower from the evenBitmap
-    nextPower = pow(evenRoot, power);
+    nextPower = evenRoot*evenRoot;
     while (nextPower >= startEven && evenRoot > 0){
         int l = (nextPower-startOdd+1)/2;
         evenBitmap |= (1ULL<<((nextPower-startEven)/2));
@@ -103,13 +103,13 @@ vector<ll> checkRange(ll k, int power) {
             oddBitmap |= (primeBitmaps[0] << l);
         }
         evenRoot -= 2;
-        nextPower = pow(evenRoot, power);
+        nextPower = evenRoot*evenRoot;
     }
 
     //apply both relevant prime bitmaps added to each odd power to the evenBitmap (while there exist exceptions)
     bool ranOut = false;
     while (oddRoot > 0 && ~evenBitmap!=0){
-        nextPower = pow(oddRoot, power);
+        nextPower = oddRoot*oddRoot;
         ll dif = (startEven-nextPower-1)/(128);
         if(dif>=primeBitmapsLength){
             ranOut = true;
@@ -125,7 +125,7 @@ vector<ll> checkRange(ll k, int power) {
 
     //apply both relevant prime bitmaps added to each even power to the oddBitmap (while there exist exceptions)
     while (evenRoot > 0 && ~oddBitmap!=0){
-        nextPower = pow(evenRoot, power);
+        nextPower = evenRoot*evenRoot;
         ll dif = (startOdd-nextPower-1)/(128);
         if(dif>=primeBitmapsLength){
             ranOut = true;
@@ -162,10 +162,10 @@ vector<ll> checkRange(ll k, int power) {
     if(ranOut){
         vector<ll> realExceptions;
         for(ll e: exceptions){
-            ll maxT = squareRootFloor(e, power);
+            ll maxT = cubeRootFloor(e);
             bool isException = true;
             for(ll t=1; t<maxT;t++){
-                if(isPrime(e-pow(t, power))){
+                if(isPrime(e-t*t)){
                     isException = false;
                     break;
                 }
@@ -181,22 +181,20 @@ vector<ll> checkRange(ll k, int power) {
 
 int main(int argc, char *argv[]) {
     /*
-    arg1 (int) is the power (square, cube, fourth, etc)
-    arg2 (int) is the power of 10 to compute up to (ie 6 means compute up to 10^6)
-    arg3 (int) tells upper bounds from prime bitmaps (ie 6 means use all primes up to 10^6) 
+    arg1 (int) is the power of 10 to compute up to (ie 6 means compute up to 10^6)
+    arg2 (int) tells upper bounds from prime bitmaps (ie 6 means use all primes up to 10^6) 
         the prime bitmaps must be generated before hand
-    arg4 (str) gives the name of the desired output file. Default is "out.txt"
+    arg3 (str) gives the name of the desired output file. Default is "out.txt"
     */
 
     auto start = chrono::high_resolution_clock::now();
-    int power = stoi(argv[1]);
-    ll N = pow(10, stoi(argv[2]));
-    string bitMapLevel = argv[3];
+    ll N = pow(10, stoi(argv[1]));
+    string bitMapLevel = argv[2];
     ll n = N/128+1; //number of calls to checkRange needed
     ll sep = n/100;  //used for the progress bar
     string destinationFile = "out.txt";
-    if(argc == 5){
-        destinationFile = argv[4];
+    if(argc == 4){
+        destinationFile = argv[3];
     }
 
     load_primes("../resources/prime_bitmaps/bitmaps"+bitMapLevel+".txt");
@@ -211,7 +209,7 @@ int main(int argc, char *argv[]) {
         if(i%sep == 0){
             cout << "\rProgress: "<< i/sep << "%    " << flush;
         }
-        vector<ll> exceptions = checkRange(i, power);
+        vector<ll> exceptions = checkRange(i);
         if(!exceptions.empty()){
             ofstream out("temp/out_" + std::to_string(i) + ".txt");
             for(ll e: exceptions){
