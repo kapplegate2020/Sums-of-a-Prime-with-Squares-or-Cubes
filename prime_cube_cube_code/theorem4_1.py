@@ -6,7 +6,7 @@ badNs += list(map(int, open(f"lemma4_2/lemma4_2_2_definite_ns.txt", "r").read().
 badNs += list(map(int, open(f"lemma4_3/definite_ns.txt", "r").read().split()))
 
 
-#the above arguments do not work for t-1<=0
+#we manually do the work for 1<=n<=8
 for x in range(1, 8):
     if helperFunctions.verifyException(x):
         badNs.append(x)
