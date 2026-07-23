@@ -1,9 +1,9 @@
 from multiprocessing import Pool, cpu_count
 from sympy import integer_nthroot
 
-primes = set(map(int, open("../../parallel/primes/primes6.txt", "r").read().split()[1:]))
+primes = set(map(int, open("../resources/prime_lists/primes6.txt", "r").read().split()[1:]))
 
-
+#we just do the greedy algorithm, subtracting off the biggest squares to see if what is left is prime
 def isSquareSquarePrime(n):
     t=integer_nthroot(n, 2)[0]
     while t>0:
@@ -34,17 +34,18 @@ def worker(start_end):
     return bad
 
 
+#we split the work into chunks for better parallelization
+if __name__ == "__main__":
+    N = 120_000_000
+    chunk = 500_000
 
-N = 120_000_000
-chunk = 500_000
+    ranges = [(i, min(i+chunk, N+1)) for i in range(1, N+1, chunk)]
 
-ranges = [(i, min(i+chunk, N+1)) for i in range(1, N+1, chunk)]
-
-with Pool(cpu_count()) as p:
-    results = p.map(worker, ranges)
+    with Pool(cpu_count()) as p:
+        results = p.map(worker, ranges)
 
 
-with open("../exceptions/prime_square_square.txt", "w") as f:
-        for r in sorted(results):
-            for x in r:
-                f.write(f"{x}\n")
+    with open("../exceptions/prime_square_square.txt", "w") as f:
+            for r in sorted(results):
+                for x in r:
+                    f.write(f"{x}\n")

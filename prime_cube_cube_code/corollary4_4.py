@@ -1,10 +1,10 @@
 from collections import defaultdict
 from sympy import integer_nthroot
-from theorem4_1 import getCubeCubePrime
+from helperFunctions import getCubeCubePrime
 
 
 
-N = 10**16
+N = 10**17
 T = integer_nthroot(N, 3)[0]
 mod = 351
 #there are other good choices of moduli besides 351, however no smaller modulus is better
@@ -28,11 +28,16 @@ for t in range(mod):
 
 #create generators to skip the appropriate classes mod 351
 def getT():
-    global mod
+    global mod, T
+    percentage = T//(mod*100)
     subset = sorted(pairs.keys())
     i, k = 2, 0
+    count = 0 
     while True:
         if i == len(subset):
+            if count%percentage == 0:
+                print(f"\rProgress: {count//percentage}%", end="")
+            count+=1
             i = 0
             k += 1
         yield subset[i] + k * mod

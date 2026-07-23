@@ -29,7 +29,6 @@ def tryEC(e):
 
 
 def doMordellCurve(e):
-    print("okkk", e)
     K = 16*27*(-1-4*e)
     integerPoints = mordellCurveIntegerPoints(K)
     possibleExceptions = []

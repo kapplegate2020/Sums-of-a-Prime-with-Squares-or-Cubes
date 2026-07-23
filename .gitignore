@@ -3,4 +3,10 @@ resources/prime_bitmaps/bitmaps10.txt
 resources/prime_lists/primes9.txt
 resources/prime_lists/primes10.txt
 
+prime_power_code/square
+prime_power_code/cube
+prime_power_code/power
+prime_power_code/sprp64.o
+
 *.sage.py
+*__pycache__

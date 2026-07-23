@@ -1,5 +1,6 @@
 from sympy import integer_nthroot
 
+#implementation is taken from https://gist.github.com/Ayrx/5884790 with edits to make it deterministic
 def deterministicMillerRabin(p):
     if p == 1:
         return False
@@ -44,17 +45,17 @@ def deterministicMillerRabin(p):
     
     return True
 
-
+#we just do the greedy algorithm, subtracting off the biggest squares to see if what is left is prime
+#counter is used to move on to a more likely guess for t if it fails several times
+#this test may return None when there is a solution
 def getCubeCubePrime(n):
     t = integer_nthroot(n, 3)[0]
-    counter = 0
-    while t>0 and counter<10000:
-        counter+=1
+    while t>0:
         n1 = n-t**3
         t1 = integer_nthroot(n1, 3)[0]
-        counter1 = 0
-        while t1>0 and counter1<100:
-            counter1+=1
+        counter = 0
+        while t1>0 and counter<100:
+            counter+=1
             res = n1-t1**3
             if deterministicMillerRabin(res) and res!=2:
                 return t, t1, res
@@ -62,6 +63,7 @@ def getCubeCubePrime(n):
         t-=1
     return None
 
+#this test verifies that there is no solution, but may take longer to find a solution if one is present
 def verifyException(n):
     t = integer_nthroot(n, 3)[0]
     while t>0:
