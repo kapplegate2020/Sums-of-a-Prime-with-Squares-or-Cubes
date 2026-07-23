@@ -8,7 +8,8 @@ load("mordellCurve.sage")
 exceptions = list(map(int, open("../../exceptions/prime_cube.txt", "r").read().split()))
 
     
-
+#try to make the elliptic curve with the typical sage EllipticCurve constructor
+#sometimes this will be unable ot compute integer points, so we return None
 def tryEC(e):
     try:
         possExceptions = []
@@ -27,17 +28,17 @@ def tryEC(e):
     except:
         return None
 
-
+#compute the integer points using the Bennet-Ghadermarzi method
 def doMordellCurve(e):
     K = 16*27*(-1-4*e)
     integerPoints = mordellCurveIntegerPoints(K)
     possibleExceptions = []
     for x, y in integerPoints:
+        #check if an integer point actually corresponds to a possible prime-cube-cube exception
         if y%36 == 0 and x%12 == 0 and y>0 and (y//36)%2==1:
             t = (y//36+1)//2
             c = x//12
             n = e+t**3
-            print(x, y, t, c, n, e)
             if integer_nthroot(n, 3)[0] == t:
                 possibleExceptions.append(n)
     return possibleExceptions
@@ -47,10 +48,9 @@ def appendFile(filename, message):
     with open(filename, "a") as f:
         f.write(message)
 
-
+#given an index i and an exception e, compute the mordell curve and write information to file
 def process(inp):
     i, e = inp
-    print(i, e)
     start = time()
     possExceptions = []
     possExceptions = tryEC(e)
@@ -69,7 +69,7 @@ def process(inp):
 
 
 
-
+#parallelize the work for different e values
 totalToDo = len(exceptions)
 lastTime = 0
 Path("temp").mkdir(exist_ok=True)
@@ -77,9 +77,10 @@ Path("temp/log").mkdir(exist_ok=True)
 Path("temp/possExceptionByE").mkdir(exist_ok=True)
 Path("temp/possExceptions").mkdir(exist_ok=True)
 with Pool() as p:
-    p.map(process, enumerate(exceptions[:200]+[36261]))
+    p.map(process, enumerate(exceptions))
 
 
+#clean up all the log values from the parallel threads into comprehensive log files
 try:
     shutil.rmtree("logs")
 except:

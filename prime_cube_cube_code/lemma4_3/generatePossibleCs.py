@@ -1,5 +1,8 @@
 import pickle
 
+#this function takes in a set of residues mod p^k and reduces it to an
+#equivalent set of residues mod p^l for some l<=k
+#for example, it would take [0, 1, 16, 17, 32, 33, 48, 49] mod 64 to the list [0, 1] (mod 16)
 def reduce(residues, p, k):
     while k>0:
         k-=1
@@ -10,6 +13,8 @@ def reduce(residues, p, k):
     return residues, p**k
 
 
+#we loop through all classes of a, b, c, and d mod base^k to check if the discriminant is divisible by base^k
+#for each (a, b) pair, we record each c such that there exists some d with the discriminant divisible by base^k
 def getPossibleCs(base, k):
     possibleCs = {}
     for a in range(base**k):
@@ -28,11 +33,22 @@ def getPossibleCs(base, k):
 possibleCs2 = getPossibleCs(2, 6)
 possibleCs3 = getPossibleCs(3, 3)
 
+
+#check what percentage of tuples (a, b, c) mod 2^6 we actually need to search (how much speedup)
 total = 0
-for a in range(2**6):
-    for b in range(2**6):
+for a in range(64):
+    for b in range(64):
         m, s = possibleCs2[(a, b)]
         total += len(s)*(64//m)
 print(total/(64**3))
 
-#pickle.dump((possibleCs2, possibleCs3), open("possibleCs.pkl", "wb"))
+#check what percentage of tuples (a, b, c) mod 3^3 we actually need to search (how much speedup)
+total = 0
+for a in range(27):
+    for b in range(27):
+        m, s = possibleCs3[(a, b)]
+        total += len(s)*(27//m)
+print(total/(27**3))
+
+
+pickle.dump((possibleCs2, possibleCs3), open("possibleCs.pkl", "wb"))
